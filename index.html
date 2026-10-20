@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>VitaTrack - Supplement Manager</title>
+  <title>Supplement Tracker</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0a0a0a">
   <style>
@@ -16,40 +16,55 @@
       --accent-amber: #ffb300;
       --text-main: #f0f0f5;
       --text-muted: #888899;
-      --badge-locked: #1c1c20;
+      --danger: #ff5252;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; padding-bottom: 80px; }
 
-    header { padding: 24px 20px 16px; background: rgba(10,10,10,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
-    h1 { font-size: 1.3rem; font-weight: 700; tracking: -0.5px; }
-    
-    .tab-nav { display: flex; background: #18181c; border-radius: 12px; padding: 4px; margin: 16px 20px 0; border: 1px solid var(--card-border); }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-    .tab-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    header { padding: 20px 20px 14px; background: rgba(10,10,10,0.85); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
 
     .view { display: none; padding: 20px; }
     .view.active { display: block; }
 
-    /* Checklist Item Cards */
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; transition: transform 0.1s, border-color 0.2s; }
+    /* Form Container */
+    .form-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
+    .form-card h2 { font-size: 1rem; margin-bottom: 14px; color: var(--text-main); }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    input, select { width: 100%; padding: 11px 12px; background: #18181c; border: 1px solid var(--card-border); border-radius: 10px; color: var(--text-main); font-size: 0.9rem; outline: none; }
+    input:focus, select:focus { border-color: var(--accent-green); }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    .btn { width: 100%; padding: 12px; background: var(--accent-green); color: #000; font-weight: 700; border: none; border-radius: 10px; font-size: 0.9rem; cursor: pointer; margin-top: 4px; }
+
+    /* Supplement Cards */
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; transition: all 0.2s; }
     .card.completed { border-color: rgba(0, 230, 118, 0.3); background: #111a14; }
-    .card-info h3 { font-size: 1rem; margin-bottom: 4px; }
-    .card-info p { font-size: 0.8rem; color: var(--text-muted); }
-    
-    .checkbox { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .card-info { flex: 1; }
+    .card-info h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+    .card-info .desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3; }
+    .card-info .meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; }
+
+    .checkbox { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
     .card.completed .checkbox { background: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 12px var(--accent-green-glow); }
     .checkbox::after { content: '✓'; color: #000; font-weight: bold; font-size: 16px; display: none; }
     .card.completed .checkbox::after { display: block; }
 
-    /* Streaks & Badges Showcase */
-    .streak-banner { background: linear-gradient(135deg, #122417 0%, #141416 100%); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; position: relative; overflow: hidden; }
+    .card-actions { display: flex; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .action-btn { background: transparent; border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); }
+    .action-btn.delete { color: var(--danger); }
+
+    /* Streaks Section */
+    .streak-banner { background: linear-gradient(135deg, #122417 0%, #141416 100%); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; }
     .streak-count { font-size: 2.8rem; font-weight: 800; color: var(--accent-green); text-shadow: 0 0 16px var(--accent-green-glow); line-height: 1; margin: 8px 0; }
     .streak-subtitle { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-    .badges-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-    .badge-card { background: var(--badge-locked); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; text-align: center; position: relative; transition: all 0.3s; opacity: 0.6; }
+    .badges-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .badge-card { background: #1c1c20; border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; text-align: center; transition: all 0.3s; opacity: 0.6; }
     .badge-card.unlocked { background: var(--card-bg); border-color: var(--accent-green); opacity: 1; box-shadow: 0 0 16px rgba(0,230,118,0.15); }
     .badge-icon { font-size: 2rem; margin-bottom: 8px; filter: grayscale(100%); }
     .badge-card.unlocked .badge-icon { filter: grayscale(0%); }
@@ -61,21 +76,13 @@
     /* Calendar Grid */
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-    .day-name { font-size: 0.75rem; color: var(--text-muted); padding-bottom: 8px; font-weight: 600; }
     .day-cell { aspect-ratio: 1; border-radius: 8px; background: #18181c; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; border: 1px solid transparent; }
     .day-cell.green { background: rgba(0, 230, 118, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
     .day-cell.amber { background: rgba(255, 179, 0, 0.15); border-color: var(--accent-amber); color: var(--accent-amber); }
     .day-cell.today { border: 1px solid #ffffff; }
 
-    /* Add Form & Inputs */
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
-    input, select { width: 100%; padding: 12px; background: #18181c; border: 1px solid var(--card-border); border-radius: 10px; color: var(--text-main); font-size: 0.95rem; outline: none; }
-    input:focus, select:focus { border-color: var(--accent-green); }
-    .btn { width: 100%; padding: 14px; background: var(--accent-green); color: #000; font-weight: 700; border: none; border-radius: 12px; font-size: 0.95rem; cursor: pointer; }
-
-    /* Bottom Nav Bar */
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; }
+    /* Bottom Nav */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 20; }
     .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; gap: 4px; cursor: pointer; }
     .nav-item.active { color: var(--accent-green); }
     .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
@@ -84,64 +91,73 @@
 <body>
 
   <header>
-    <h1>VitaTrack</h1>
+    <h1>Supplement Tracker</h1>
     <span id="date-display" style="font-size:0.8rem; color:var(--text-muted);"></span>
   </header>
 
-  <!-- Navigation Views -->
   <main>
-    <!-- Checklist Tab -->
-    <section id="checklist-view" class="view active">
+    <!-- TAB 1: Today (Add Form + Daily List) -->
+    <section id="today-view" class="view active">
+      <div class="form-card">
+        <h2 id="form-title">Add New Supplement</h2>
+        <form id="supp-form">
+          <input type="hidden" id="edit-id" value="">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="supp-name" placeholder="e.g. Creatine Monohydrate" required>
+          </div>
+          <div class="form-group">
+            <label>Description / Notes</label>
+            <input type="text" id="supp-desc" placeholder="e.g. 5g with pre-workout smoothie">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Frequency</label>
+              <select id="supp-freq">
+                <option value="daily">Daily</option>
+                <option value="alternate">Alternate Days</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Reminder Time</label>
+              <input type="time" id="supp-time" value="08:00">
+            </div>
+          </div>
+          <button type="submit" class="btn" id="form-submit-btn">Add Supplement</button>
+        </form>
+      </div>
+
+      <div class="section-title">
+        Today's Schedule
+      </div>
       <div id="supplement-list"></div>
     </section>
 
-    <!-- Stats & Streaks Tab -->
+    <!-- TAB 2: Stats (Calendar) -->
     <section id="stats-view" class="view">
+      <div class="calendar-header">
+        <h3 style="font-size: 1rem;">Monthly Adherence History</h3>
+        <span id="month-name" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </section>
+
+    <!-- TAB 3: Streaks (Badges & Milestones) -->
+    <section id="streaks-view" class="view">
       <div class="streak-banner">
         <div class="streak-subtitle">Active Adherence Streak</div>
         <div class="streak-count" id="current-streak">0 DAYS</div>
         <div style="font-size:0.8rem; color:var(--text-muted);" id="best-streak">Personal Best: 0 Days</div>
       </div>
 
-      <!-- Calendar View -->
-      <div class="calendar-header">
-        <h3 style="font-size: 1rem;">Monthly Adherence</h3>
-        <span id="month-name" style="font-size: 0.85rem; color: var(--text-muted);"></span>
-      </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
-
-      <!-- Streaks & Badges Showcase Section -->
-      <h3 style="font-size: 1rem; margin-top: 28px; margin-bottom: 12px;">Milestone Badges</h3>
+      <h3 style="font-size: 1rem; margin-bottom: 12px;">Milestone Badges</h3>
       <div class="badges-grid" id="badges-grid"></div>
-    </section>
-
-    <!-- Manage Supplements Tab -->
-    <section id="manage-view" class="view">
-      <h3 style="margin-bottom: 16px;">Add New Supplement</h3>
-      <form id="add-form">
-        <div class="form-group">
-          <label>Supplement Name</label>
-          <input type="text" id="supp-name" placeholder="e.g. Creatine Monohydrate" required>
-        </div>
-        <div class="form-group">
-          <label>Frequency</label>
-          <select id="supp-freq">
-            <option value="daily">Daily</option>
-            <option value="alternate">Alternate Days (Every 48 hrs)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Daily Reminder Time</label>
-          <input type="time" id="supp-time" value="08:00">
-        </div>
-        <button type="submit" class="btn">Add to Schedule</button>
-      </form>
     </section>
   </main>
 
-  <!-- Fixed Bottom Navigation -->
+  <!-- Navigation Bar -->
   <nav class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('checklist-view', this)">
+    <div class="nav-item active" onclick="switchTab('today-view', this)">
       <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       Today
     </div>
@@ -149,24 +165,22 @@
       <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
       Stats
     </div>
-    <div class="nav-item" onclick="switchTab('manage-view', this)">
-      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-      Add
+    <div class="nav-item" onclick="switchTab('streaks-view', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      Streaks
     </div>
   </nav>
 
   <script>
-    // State & Storage
     let supplements = JSON.parse(localStorage.getItem('vt_supplements')) || [
-      { id: 1, name: 'Creatine Monohydrate', freq: 'daily', time: '08:00' },
-      { id: 2, name: 'Omega-3 Fish Oil', freq: 'daily', time: '12:00' },
-      { id: 3, name: 'Magnesium Glycinate', freq: 'daily', time: '22:00' }
+      { id: 1, name: 'Creatine Monohydrate', desc: '5g with daily smoothie', freq: 'daily', time: '08:00' },
+      { id: 2, name: 'Omega-3 Fish Oil', desc: '1000mg with meal', freq: 'daily', time: '12:00' },
+      { id: 3, name: 'Magnesium Glycinate', desc: 'Take before sleep', freq: 'daily', time: '22:00' }
     ];
 
     let logs = JSON.parse(localStorage.getItem('vt_logs')) || {};
     const todayKey = new Date().toISOString().split('T')[0];
 
-    // Defined Milestone Badges
     const BADGES = [
       { id: 'streak-1', icon: '⚡', title: 'First Intake', target: 1, desc: 'Complete 1 full day of scheduled supplements.' },
       { id: 'streak-7', icon: '🛡️', title: '7-Day Vanguard', target: 7, desc: 'Maintain 7 consecutive days of 100% adherence.' },
@@ -178,8 +192,6 @@
     function init() {
       document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
       renderChecklist();
-      renderStats();
-      requestNotificationPermission();
     }
 
     function switchTab(viewId, element) {
@@ -187,7 +199,9 @@
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       document.getElementById(viewId).classList.add('active');
       element.classList.add('active');
-      if (viewId === 'stats-view') renderStats();
+
+      if (viewId === 'stats-view') renderCalendar();
+      if (viewId === 'streaks-view') renderStreaksAndBadges();
     }
 
     function renderChecklist() {
@@ -201,31 +215,95 @@
         const card = document.createElement('div');
         card.className = `card ${isDone ? 'completed' : ''}`;
         card.innerHTML = `
-          <div class="card-info">
-            <h3>${supp.name}</h3>
-            <p>${supp.freq === 'daily' ? 'Daily' : 'Alternate Days'} • Scheduled ${supp.time}</p>
+          <div class="card-header">
+            <div class="card-info">
+              <h3>${supp.name}</h3>
+              ${supp.desc ? `<div class="desc">${supp.desc}</div>` : ''}
+              <div class="meta">
+                <span>${supp.freq === 'daily' ? 'Daily' : 'Alternate Days'}</span>
+                <span>• Scheduled ${supp.time}</span>
+              </div>
+            </div>
+            <div class="checkbox" onclick="toggleSupp(${supp.id})"></div>
           </div>
-          <div class="checkbox" onclick="toggleSupp(${supp.id})"></div>
+          <div class="card-actions">
+            <button class="action-btn" onclick="editSupp(${supp.id})">Edit</button>
+            <button class="action-btn delete" onclick="deleteSupp(${supp.id})">Delete</button>
+          </div>
         `;
         container.appendChild(card);
       });
 
-      saveLogs();
+      saveStorage();
     }
 
     function toggleSupp(id) {
       if (!logs[todayKey]) logs[todayKey] = {};
       logs[todayKey][id] = !logs[todayKey][id];
-      saveLogs();
+      saveStorage();
       renderChecklist();
     }
 
-    function saveLogs() {
-      localStorage.setItem('vt_logs', JSON.stringify(logs));
-      localStorage.setItem('vt_supplements', JSON.stringify(supplements));
+    function editSupp(id) {
+      const supp = supplements.find(s => s.id === id);
+      if (!supp) return;
+
+      document.getElementById('edit-id').value = supp.id;
+      document.getElementById('supp-name').value = supp.name;
+      document.getElementById('supp-desc').value = supp.desc || '';
+      document.getElementById('supp-freq').value = supp.freq;
+      document.getElementById('supp-time').value = supp.time;
+
+      document.getElementById('form-title').innerText = 'Edit Supplement';
+      document.getElementById('form-submit-btn').innerText = 'Update Supplement';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Calculate Streaks & Badges
+    function deleteSupp(id) {
+      if (confirm('Delete this supplement from your schedule?')) {
+        supplements = supplements.filter(s => s.id !== id);
+        saveStorage();
+        renderChecklist();
+      }
+    }
+
+    document.getElementById('supp-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('edit-id').value;
+      const name = document.getElementById('supp-name').value;
+      const desc = document.getElementById('supp-desc').value;
+      const freq = document.getElementById('supp-freq').value;
+      const time = document.getElementById('supp-time').value;
+
+      if (editId) {
+        const supp = supplements.find(s => s.id == editId);
+        if (supp) {
+          supp.name = name;
+          supp.desc = desc;
+          supp.freq = freq;
+          supp.time = time;
+        }
+      } else {
+        supplements.push({ id: Date.now(), name, desc, freq, time });
+      }
+
+      saveStorage();
+      resetForm();
+      renderChecklist();
+    });
+
+    function resetForm() {
+      document.getElementById('edit-id').value = '';
+      document.getElementById('supp-form').reset();
+      document.getElementById('form-title').innerText = 'Add New Supplement';
+      document.getElementById('form-submit-btn').innerText = 'Add Supplement';
+    }
+
+    function saveStorage() {
+      localStorage.setItem('vt_supplements', JSON.stringify(supplements));
+      localStorage.setItem('vt_logs', JSON.stringify(logs));
+    }
+
     function calculateStreaks() {
       let currentStreak = 0;
       let date = new Date();
@@ -234,11 +312,10 @@
         const dateStr = date.toISOString().split('T')[0];
         const dayLog = logs[dateStr];
 
-        if (dayLog && supplements.every(s => dayLog[s.id])) {
+        if (dayLog && supplements.length > 0 && supplements.every(s => dayLog[s.id])) {
           currentStreak++;
           date.setDate(date.getDate() - 1);
         } else {
-          // If today isn't fully checked yet, look back starting yesterday before breaking
           if (dateStr === todayKey) {
             date.setDate(date.getDate() - 1);
             continue;
@@ -253,12 +330,7 @@
       return { currentStreak, bestStreak };
     }
 
-    function renderStats() {
-      const { currentStreak, bestStreak } = calculateStreaks();
-      document.getElementById('current-streak').innerText = `${currentStreak} DAYS`;
-      document.getElementById('best-streak').innerText = `Personal Best: ${bestStreak} Days`;
-
-      // Render Calendar
+    function renderCalendar() {
       const grid = document.getElementById('calendar-grid');
       grid.innerHTML = '';
       const now = new Date();
@@ -284,8 +356,13 @@
         }
         grid.appendChild(cell);
       }
+    }
 
-      // Render Badges
+    function renderStreaksAndBadges() {
+      const { currentStreak, bestStreak } = calculateStreaks();
+      document.getElementById('current-streak').innerText = `${currentStreak} DAYS`;
+      document.getElementById('best-streak').innerText = `Personal Best: ${bestStreak} Days`;
+
       const badgesGrid = document.getElementById('badges-grid');
       badgesGrid.innerHTML = '';
 
@@ -305,28 +382,6 @@
         `;
         badgesGrid.appendChild(card);
       });
-    }
-
-    // Add Supplement Event
-    document.getElementById('add-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newSupp = {
-        id: Date.now(),
-        name: document.getElementById('supp-name').value,
-        freq: document.getElementById('supp-freq').value,
-        time: document.getElementById('supp-time').value
-      };
-      supplements.push(newSupp);
-      saveLogs();
-      e.target.reset();
-      alert('Supplement added!');
-    });
-
-    // Notification Permission
-    function requestNotificationPermission() {
-      if ('Notification' in window && Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      }
     }
 
     init();
