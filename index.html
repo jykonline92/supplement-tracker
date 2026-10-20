@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Supplement Tracker</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#0b0f17">
   <style>
     :root {
       --bg: #0b0f17;
@@ -23,9 +23,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; padding-bottom: 90px; }
 
-    /* Header & Circular Ring */
+    /* Header & Progress Ring */
     header { padding: 18px 20px 10px; background: rgba(11,15,23,0.85); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-    h1 { font-size: 1.8rem; font-weight: 800; tracking: -0.5px; }
+    h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
     .header-icons { display: flex; gap: 10px; align-items: center; }
     .streak-badge { background: #1c2636; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; color: var(--accent-amber); display: flex; align-items: center; gap: 4px; }
 
@@ -38,10 +38,10 @@
     .view { display: none; padding: 0 20px; }
     .view.active { display: block; }
 
-    .section-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); tracking: 1px; margin: 20px 0 10px; text-transform: uppercase; }
+    .section-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; margin: 20px 0 10px; text-transform: uppercase; }
 
-    /* Card Layout matching image */
-    .supp-card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 6px; }
+    /* Card Layout */
+    .supp-card { background: var(--card-bg); border-radius: 16px 16px 0 0; padding: 16px; border: 1px solid var(--card-border); border-bottom: none; }
     .card-main { display: flex; align-items: center; gap: 14px; }
     .pill-icon { font-size: 1.8rem; }
     .card-details { flex: 1; }
@@ -49,14 +49,14 @@
     .card-details .dose { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
     .card-details .sub-info { font-size: 0.78rem; color: var(--text-muted); }
 
-    .check-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; background: #1a2332; }
+    .check-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; background: #1a2332; font-weight: bold; }
     .check-btn.checked { background: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 12px var(--accent-green-glow); color: #000; }
 
-    .doses-bar { background: #121824; border-radius: 0 0 16px 16px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+    .doses-bar { background: #121824; border-radius: 0 0 16px 16px; border: 1px solid var(--card-border); border-top: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
     .doses-click { color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 500; }
     .log-another { color: var(--accent-green); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
 
-    /* Bottom Sheet Modal matching Screenshot 7 */
+    /* Bottom Sheet Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
@@ -73,7 +73,6 @@
     .dose-item-info h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
     .dose-item-info p { font-size: 0.8rem; color: var(--text-muted); }
     .trash-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 6px; }
-    .trash-btn:hover { color: var(--danger); }
 
     .modal-action-btn { width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--accent-green); color: var(--accent-green); font-weight: 700; border-radius: 12px; font-size: 0.9rem; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
@@ -108,7 +107,7 @@
           <circle id="ring-circle" stroke="#00e676" stroke-width="10" stroke-linecap="round" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314" stroke-dashoffset="62"/>
         </svg>
         <div class="ring-text">
-          <span class="count" id="taken-count">4 of 5</span>
+          <span class="count" id="taken-count">0 of 0</span>
           <span class="sub">taken</span>
         </div>
       </div>
@@ -139,7 +138,7 @@
     </section>
   </main>
 
-  <!-- Dose History Modal (Screenshot 7) -->
+  <!-- Dose History Modal -->
   <div class="modal-overlay" id="dose-modal" onclick="closeDoseModal(event)">
     <div class="bottom-sheet" onclick="event.stopPropagation()">
       <div class="sheet-header">
@@ -182,21 +181,22 @@
   </nav>
 
   <script>
+    // Force unregister any old cached Service Workers to ensure fresh loads
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+
     let supplements = JSON.parse(localStorage.getItem('vt_supplements')) || [
       { id: 1, name: 'Vitamin D & K2 MK-7', dose: '4000iu & M2 100µg', time: '11:00', freq: 'Every other day', slot: 'morning', icon: '💊' },
       { id: 2, name: 'Fish Oil', dose: '660mg EPA & 440mg DHA', time: '12:00', freq: 'Daily', slot: 'morning', icon: '🥜' },
       { id: 3, name: 'Vitamin C + Zinc', dose: '1000mg Vitamin C + 15mg Zinc', time: '10:00', freq: 'Daily', slot: 'morning', icon: '🛡️' }
     ];
 
-    let doseLogs = JSON.parse(localStorage.getItem('vt_dose_logs')) || {
-      "2026-10-20": {
-        2: [
-          { slot: 'Morning', time: '10:42 PM' },
-          { slot: 'Evening', time: '11:59 PM' }
-        ]
-      }
-    };
-
+    let doseLogs = JSON.parse(localStorage.getItem('vt_dose_logs')) || {};
     const todayKey = new Date().toISOString().split('T')[0];
     let activeModalSuppId = null;
 
@@ -227,25 +227,27 @@
         if (isTaken) totalTaken++;
 
         const cardHTML = `
-          <div class="supp-card">
-            <div class="card-main">
-              <span class="pill-icon">${supp.icon || '💊'}</span>
-              <div class="card-details">
-                <h3>${supp.name}</h3>
-                <div class="dose">${supp.dose}</div>
-                <div class="sub-info">🕒 ${supp.time} • ${supp.freq}</div>
-              </div>
-              <div class="check-btn ${isTaken ? 'checked' : ''}" onclick="toggleQuickDose(${supp.id})">
-                ${isTaken ? '✓' : ''}
+          <div>
+            <div class="supp-card">
+              <div class="card-main">
+                <span class="pill-icon">${supp.icon || '💊'}</span>
+                <div class="card-details">
+                  <h3>${supp.name}</h3>
+                  <div class="dose">${supp.dose}</div>
+                  <div class="sub-info">🕒 ${supp.time} • ${supp.freq}</div>
+                </div>
+                <div class="check-btn ${isTaken ? 'checked' : ''}" onclick="toggleQuickDose(${supp.id})">
+                  ${isTaken ? '✓' : ''}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="doses-bar">
-            <div class="doses-click" onclick="openDoseModal(${supp.id})">
-              Doses today: ${suppLogs.length} ›
-            </div>
-            <div class="log-another" onclick="addDoseDirect(${supp.id})">
-              ⊕ Log another dose
+            <div class="doses-bar">
+              <div class="doses-click" onclick="openDoseModal(${supp.id})">
+                Doses today: ${suppLogs.length} ›
+              </div>
+              <div class="log-another" onclick="addDoseDirect(${supp.id})">
+                ⊕ Log another dose
+              </div>
             </div>
           </div>
         `;
@@ -257,10 +259,10 @@
         }
       });
 
-      // Update Ring
+      // Update Circular Ring
       document.getElementById('taken-count').innerText = `${totalTaken} of ${supplements.length}`;
       const circle = document.getElementById('ring-circle');
-      const offset = 314 - (314 * (totalTaken / supplements.length));
+      const offset = 314 - (314 * (totalTaken / (supplements.length || 1)));
       circle.style.strokeDashoffset = offset;
     }
 
@@ -290,7 +292,7 @@
       renderToday();
     }
 
-    /* Modal Logic (Screenshot 7) */
+    /* Modal Sheet Logic */
     function openDoseModal(suppId) {
       activeModalSuppId = suppId;
       const supp = supplements.find(s => s.id === suppId);
@@ -340,12 +342,15 @@
       renderModalDosesList();
     }
 
-    function closeDoseModal() {
-      document.getElementById('dose-modal').classList.remove('active');
+    function closeDoseModal(e) {
+      if (!e || e.target.id === 'dose-modal' || e.target.classList.contains('close-btn')) {
+        document.getElementById('dose-modal').classList.remove('active');
+      }
     }
 
     function saveLogs() {
       localStorage.setItem('vt_dose_logs', JSON.stringify(doseLogs));
+      localStorage.setItem('vt_supplements', JSON.stringify(supplements));
     }
 
     function renderCalendar() {
