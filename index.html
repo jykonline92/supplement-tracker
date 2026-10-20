@@ -1,390 +1,1030 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Supplement Tracker</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0a0a">
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --card-bg: #141416;
-      --card-border: #222226;
-      --accent-green: #00e676;
-      --accent-green-glow: rgba(0, 230, 118, 0.25);
-      --accent-amber: #ffb300;
-      --text-main: #f0f0f5;
-      --text-muted: #888899;
-      --danger: #ff5252;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VitaTrack - Daily Supplement Tracker</title>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; padding-bottom: 80px; }
-
-    header { padding: 20px 20px 14px; background: rgba(10,10,10,0.85); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
-    h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
-
-    .view { display: none; padding: 20px; }
-    .view.active { display: block; }
-
-    /* Form Container */
-    .form-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
-    .form-card h2 { font-size: 1rem; margin-bottom: 14px; color: var(--text-main); }
-    .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-    input, select { width: 100%; padding: 11px 12px; background: #18181c; border: 1px solid var(--card-border); border-radius: 10px; color: var(--text-main); font-size: 0.9rem; outline: none; }
-    input:focus, select:focus { border-color: var(--accent-green); }
-    .form-row { display: flex; gap: 10px; }
-    .form-row .form-group { flex: 1; }
-    .btn { width: 100%; padding: 12px; background: var(--accent-green); color: #000; font-weight: 700; border: none; border-radius: 10px; font-size: 0.9rem; cursor: pointer; margin-top: 4px; }
-
-    /* Supplement Cards */
-    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; transition: all 0.2s; }
-    .card.completed { border-color: rgba(0, 230, 118, 0.3); background: #111a14; }
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .card-info { flex: 1; }
-    .card-info h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
-    .card-info .desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3; }
-    .card-info .meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; }
-
-    .checkbox { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
-    .card.completed .checkbox { background: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 12px var(--accent-green-glow); }
-    .checkbox::after { content: '✓'; color: #000; font-weight: bold; font-size: 16px; display: none; }
-    .card.completed .checkbox::after { display: block; }
-
-    .card-actions { display: flex; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-    .action-btn { background: transparent; border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); }
-    .action-btn.delete { color: var(--danger); }
-
-    /* Streaks Section */
-    .streak-banner { background: linear-gradient(135deg, #122417 0%, #141416 100%); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; }
-    .streak-count { font-size: 2.8rem; font-weight: 800; color: var(--accent-green); text-shadow: 0 0 16px var(--accent-green-glow); line-height: 1; margin: 8px 0; }
-    .streak-subtitle { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-    .badges-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .badge-card { background: #1c1c20; border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; text-align: center; transition: all 0.3s; opacity: 0.6; }
-    .badge-card.unlocked { background: var(--card-bg); border-color: var(--accent-green); opacity: 1; box-shadow: 0 0 16px rgba(0,230,118,0.15); }
-    .badge-icon { font-size: 2rem; margin-bottom: 8px; filter: grayscale(100%); }
-    .badge-card.unlocked .badge-icon { filter: grayscale(0%); }
-    .badge-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
-    .badge-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.3; }
-    .progress-bar-bg { background: #222228; height: 4px; border-radius: 2px; margin-top: 10px; overflow: hidden; }
-    .progress-bar-fill { background: var(--accent-green); height: 100%; width: 0%; transition: width 0.4s ease; }
-
-    /* Calendar Grid */
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-    .day-cell { aspect-ratio: 1; border-radius: 8px; background: #18181c; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; border: 1px solid transparent; }
-    .day-cell.green { background: rgba(0, 230, 118, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
-    .day-cell.amber { background: rgba(255, 179, 0, 0.15); border-color: var(--accent-amber); color: var(--accent-amber); }
-    .day-cell.today { border: 1px solid #ffffff; }
-
-    /* Bottom Nav */
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 20; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; gap: 4px; cursor: pointer; }
-    .nav-item.active { color: var(--accent-green); }
-    .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>Supplement Tracker</h1>
-    <span id="date-display" style="font-size:0.8rem; color:var(--text-muted);"></span>
-  </header>
-
-  <main>
-    <!-- TAB 1: Today (Add Form + Daily List) -->
-    <section id="today-view" class="view active">
-      <div class="form-card">
-        <h2 id="form-title">Add New Supplement</h2>
-        <form id="supp-form">
-          <input type="hidden" id="edit-id" value="">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" id="supp-name" placeholder="e.g. Creatine Monohydrate" required>
-          </div>
-          <div class="form-group">
-            <label>Description / Notes</label>
-            <input type="text" id="supp-desc" placeholder="e.g. 5g with pre-workout smoothie">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Frequency</label>
-              <select id="supp-freq">
-                <option value="daily">Daily</option>
-                <option value="alternate">Alternate Days</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Reminder Time</label>
-              <input type="time" id="supp-time" value="08:00">
-            </div>
-          </div>
-          <button type="submit" class="btn" id="form-submit-btn">Add Supplement</button>
-        </form>
-      </div>
-
-      <div class="section-title">
-        Today's Schedule
-      </div>
-      <div id="supplement-list"></div>
-    </section>
-
-    <!-- TAB 2: Stats (Calendar) -->
-    <section id="stats-view" class="view">
-      <div class="calendar-header">
-        <h3 style="font-size: 1rem;">Monthly Adherence History</h3>
-        <span id="month-name" style="font-size: 0.85rem; color: var(--text-muted);"></span>
-      </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
-    </section>
-
-    <!-- TAB 3: Streaks (Badges & Milestones) -->
-    <section id="streaks-view" class="view">
-      <div class="streak-banner">
-        <div class="streak-subtitle">Active Adherence Streak</div>
-        <div class="streak-count" id="current-streak">0 DAYS</div>
-        <div style="font-size:0.8rem; color:var(--text-muted);" id="best-streak">Personal Best: 0 Days</div>
-      </div>
-
-      <h3 style="font-size: 1rem; margin-bottom: 12px;">Milestone Badges</h3>
-      <div class="badges-grid" id="badges-grid"></div>
-    </section>
-  </main>
-
-  <!-- Navigation Bar -->
-  <nav class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('today-view', this)">
-      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-      Today
-    </div>
-    <div class="nav-item" onclick="switchTab('stats-view', this)">
-      <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
-      Stats
-    </div>
-    <div class="nav-item" onclick="switchTab('streaks-view', this)">
-      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-      Streaks
-    </div>
-  </nav>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <script>
-    let supplements = JSON.parse(localStorage.getItem('vt_supplements')) || [
-      { id: 1, name: 'Creatine Monohydrate', desc: '5g with daily smoothie', freq: 'daily', time: '08:00' },
-      { id: 2, name: 'Omega-3 Fish Oil', desc: '1000mg with meal', freq: 'daily', time: '12:00' },
-      { id: 3, name: 'Magnesium Glycinate', desc: 'Take before sleep', freq: 'daily', time: '22:00' }
-    ];
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              500: '#00e676',
+              600: '#00c853',
+              dark: '#0a1d13'
+            },
+            accent: {
+              amber: '#ffb300',
+              blue: '#29b6f6'
+            },
+            dark: {
+              bg: '#0a0a0a',
+              card: '#14171e',
+              cardBorder: '#202530',
+              surface: '#1c212c',
+              border: '#2a3140'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
 
-    let logs = JSON.parse(localStorage.getItem('vt_logs')) || {};
-    const todayKey = new Date().toISOString().split('T')[0];
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #2a3140; border-radius: 9999px; }
+
+    body {
+      background-color: #0a0a0a;
+      color: #f0f4f8;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Modal Animation */
+    .modal-enter {
+      animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Circular Progress Ring */
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.5s ease-in-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-100 flex justify-center items-center min-h-screen p-0 sm:p-4 overflow-x-hidden bg-black">
+
+  <!-- Mobile App Shell -->
+  <div class="w-full max-w-md h-screen sm:h-[880px] bg-dark-bg sm:rounded-[36px] shadow-2xl flex flex-col relative overflow-hidden border-0 sm:border-[8px] border-slate-900">
+
+    <!-- Top View Container Area -->
+    <div id="app-container" class="flex-1 overflow-y-auto pb-24">
+
+      <!-- ================= TAB 1: TODAY ================= -->
+      <section id="tab-today" class="view-section p-5 space-y-6">
+        <!-- Header Bar -->
+        <div class="flex justify-between items-center pt-2">
+          <h1 class="text-3xl font-black tracking-tight text-white">Today</h1>
+          <div class="flex items-center gap-2">
+            <!-- Streak Flame Button -->
+            <button onclick="switchTab('stats')" class="flex items-center gap-1.5 bg-dark-card border border-dark-cardBorder px-3 py-1.5 rounded-full text-accent-amber shadow-sm active:scale-95 transition-all">
+              <i class="fa-solid fa-fire text-sm text-accent-amber animate-pulse"></i>
+              <span id="header-streak-count" class="text-xs font-bold">3</span>
+            </button>
+            <button onclick="switchTab('settings')" class="w-9 h-9 bg-dark-card border border-dark-cardBorder text-slate-400 hover:text-white rounded-full flex items-center justify-center transition-all">
+              <i class="fa-solid fa-sliders text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Radial Progress Widget -->
+        <div class="flex flex-col items-center justify-center py-2">
+          <div class="relative w-36 h-36 flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 100 100">
+              <!-- Track Circle -->
+              <circle class="text-dark-cardBorder" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+              <!-- Progress Circle -->
+              <circle id="progress-ring" class="progress-ring__circle text-brand-500" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="50.24" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <span id="progress-taken-text" class="text-xl font-black text-white leading-none">0 of 0</span>
+              <span class="text-[11px] text-slate-400 font-medium mt-1">taken</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today Checklist Sections -->
+        <div id="today-groups-container" class="space-y-6">
+          <!-- Dynamic Time Grouping (MORNING, EVENING) will be inserted here -->
+        </div>
+      </section>
+
+
+      <!-- ================= TAB 2: MY SUPPLEMENTS ================= -->
+      <section id="tab-supplements" class="view-section p-5 space-y-5 hidden">
+        <div class="flex justify-between items-center pt-2">
+          <div>
+            <h1 class="text-3xl font-black tracking-tight text-white">My Supplements</h1>
+            <p id="supplements-count-text" class="text-xs text-slate-400 mt-0.5">0 total supplements</p>
+          </div>
+          <button onclick="openModal()" class="w-10 h-10 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold rounded-full flex items-center justify-center shadow-lg shadow-brand-500/20 active:scale-95 transition-all">
+            <i class="fa-solid fa-plus text-base"></i>
+          </button>
+        </div>
+
+        <!-- Stack Presets Bar -->
+        <div class="bg-dark-card border border-dark-cardBorder hover:border-slate-700 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer transition-all" onclick="addSampleStack()">
+          <div class="flex items-center gap-2.5 text-xs font-semibold text-brand-500">
+            <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+            <span>Load Default Essentials Stack</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+        </div>
+
+        <!-- Supplements List -->
+        <div id="supplements-master-list" class="space-y-3">
+          <!-- Supplement Item List Rendered dynamically -->
+        </div>
+      </section>
+
+
+      <!-- ================= TAB 3: LOG (CALENDAR & JOURNAL) ================= -->
+      <section id="tab-log" class="view-section p-5 space-y-5 hidden">
+        <h1 class="text-3xl font-black tracking-tight text-white pt-2">Log</h1>
+
+        <!-- Log Sub-navigation Switcher -->
+        <div class="bg-dark-surface p-1 rounded-2xl flex gap-1 border border-dark-cardBorder text-xs font-bold">
+          <button id="log-sub-history" onclick="switchLogSubTab('history')" class="flex-1 py-2 rounded-xl bg-dark-card text-white shadow-sm transition-all">History</button>
+          <button id="log-sub-journal" onclick="switchLogSubTab('journal')" class="flex-1 py-2 rounded-xl text-slate-400 hover:text-white transition-all">Journal</button>
+        </div>
+
+        <!-- Log Sub-view 1: Calendar History -->
+        <div id="log-content-history" class="space-y-4">
+          <div class="bg-dark-card border border-dark-cardBorder rounded-3xl p-4 shadow-xl">
+            <!-- Month Header -->
+            <div class="flex justify-between items-center mb-4 px-1">
+              <button onclick="changeCalendarMonth(-1)" class="w-8 h-8 rounded-xl bg-dark-surface text-slate-300 hover:text-white flex items-center justify-center">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <h2 id="calendar-month-title" class="text-base font-bold text-white tracking-wide">October 2026</h2>
+              <button onclick="changeCalendarMonth(1)" class="w-8 h-8 rounded-xl bg-dark-surface text-slate-300 hover:text-white flex items-center justify-center">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+
+            <!-- Day Headers -->
+            <div class="grid grid-cols-7 text-center text-[11px] font-bold text-slate-500 mb-2">
+              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5 text-xs text-center font-bold">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+
+          <!-- History Status Legend Banner -->
+          <div class="border border-brand-500/30 bg-brand-dark/40 rounded-2xl p-3.5 flex items-center justify-between text-xs text-brand-500">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Complete daily log history saved</span>
+            </div>
+            <span class="text-[10px] bg-brand-500/20 px-2 py-0.5 rounded-full text-brand-500 font-bold">Active</span>
+          </div>
+        </div>
+
+        <!-- Log Sub-view 2: Notes Journal -->
+        <div id="log-content-journal" class="space-y-3 hidden">
+          <div class="bg-dark-card border border-dark-cardBorder rounded-2xl p-4 space-y-3">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Today's Supplement Notes</h3>
+            <textarea id="journal-textarea" rows="4" placeholder="How did you feel today? Any energy changes, digestion notes, or timing adjustments..." class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl p-3 text-xs text-white focus:outline-none focus:border-brand-500 resize-none"></textarea>
+            <button onclick="saveJournalEntry()" class="w-full bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-brand-500/20">Save Entry</button>
+          </div>
+          <div id="journal-entries-list" class="space-y-2.5">
+            <!-- Previous entries rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= TAB 4: STATS & STREAKS ================= -->
+      <section id="tab-stats" class="view-section p-5 space-y-5 hidden">
+        <h1 class="text-3xl font-black tracking-tight text-white pt-2">Stats</h1>
+
+        <!-- Overall High Level Metric Cards -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-dark-card p-3 rounded-2xl border border-dark-cardBorder">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Adherence</span>
+            <span id="stat-overall-pct" class="text-lg font-black text-brand-500">100%</span>
+          </div>
+          <div class="bg-dark-card p-3 rounded-2xl border border-dark-cardBorder">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Current</span>
+            <span id="stat-current-streak" class="text-lg font-black text-accent-amber">0 Days</span>
+          </div>
+          <div class="bg-dark-card p-3 rounded-2xl border border-dark-cardBorder">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Total Taken</span>
+            <span id="stat-total-doses" class="text-lg font-black text-slate-100">0</span>
+          </div>
+        </div>
+
+        <!-- Streak Highlight Card -->
+        <div class="bg-gradient-to-br from-dark-card to-dark-surface border border-dark-cardBorder rounded-3xl p-5 text-center space-y-2">
+          <div class="w-12 h-12 bg-accent-amber/10 border border-accent-amber/30 rounded-2xl mx-auto flex items-center justify-center text-accent-amber text-xl">
+            <i class="fa-solid fa-fire animate-pulse"></i>
+          </div>
+          <h2 id="streak-banner-count" class="text-3xl font-black text-white">0 Days</h2>
+          <p class="text-xs text-slate-400">Current active intake streak</p>
+        </div>
+
+        <!-- Badges Section -->
+        <div>
+          <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Milestone Badges</h3>
+          <div id="badges-grid-container" class="grid grid-cols-2 gap-3">
+            <!-- Badges dynamically rendered -->
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= TAB 5: SETTINGS ================= -->
+      <section id="tab-settings" class="view-section p-5 space-y-5 hidden">
+        <h1 class="text-3xl font-black tracking-tight text-white pt-2">Settings</h1>
+
+        <div class="bg-dark-card border border-dark-cardBorder rounded-2xl divide-y divide-dark-cardBorder/60 text-xs">
+          <!-- Notification Toggle -->
+          <div class="p-4 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-white block">Reminders & Alerts</span>
+              <span class="text-slate-400 text-[11px]">Browser push notifications</span>
+            </div>
+            <button onclick="requestNotificationPermission()" class="px-3 py-1.5 bg-dark-surface border border-dark-cardBorder text-brand-500 font-bold rounded-xl hover:bg-dark-border transition-all">Enable</button>
+          </div>
+
+          <!-- Export Data -->
+          <div class="p-4 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-white block">Export Backup Data</span>
+              <span class="text-slate-400 text-[11px]">Save logs & supplements to JSON</span>
+            </div>
+            <button onclick="exportData()" class="px-3 py-1.5 bg-dark-surface border border-dark-cardBorder text-slate-200 font-bold rounded-xl hover:bg-dark-border transition-all">Export</button>
+          </div>
+
+          <!-- Reset App -->
+          <div class="p-4 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-rose-400 block">Reset Application</span>
+              <span class="text-slate-400 text-[11px]">Clear all stored supplements and history</span>
+            </div>
+            <button onclick="clearAllData()" class="px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold rounded-xl hover:bg-rose-500/20 transition-all">Reset</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+
+    <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-dark-bg/95 backdrop-blur-xl border-t border-dark-cardBorder flex justify-around items-center py-2 px-2 z-30">
+      <button onclick="switchTab('today')" id="nav-today" class="nav-btn flex flex-col items-center gap-1 text-brand-500 transition-all w-16">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span class="text-[10px] font-bold">Today</span>
+      </button>
+
+      <button onclick="switchTab('supplements')" id="nav-supplements" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-all w-16">
+        <i class="fa-solid fa-list-ul text-lg"></i>
+        <span class="text-[10px] font-bold">Supplements</span>
+      </button>
+
+      <button onclick="switchTab('log')" id="nav-log" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-all w-16">
+        <i class="fa-solid fa-book-bookmark text-lg"></i>
+        <span class="text-[10px] font-bold">Log</span>
+      </button>
+
+      <button onclick="switchTab('stats')" id="nav-stats" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-all w-16">
+        <i class="fa-solid fa-chart-simple text-lg"></i>
+        <span class="text-[10px] font-bold">Stats</span>
+      </button>
+
+      <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-all w-16">
+        <i class="fa-solid fa-gear text-lg"></i>
+        <span class="text-[10px] font-bold">Settings</span>
+      </button>
+    </nav>
+
+  </div>
+
+
+  <!-- ================= ADD / EDIT SUPPLEMENT MODAL ================= -->
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="modal-container" class="w-full max-w-md bg-dark-card rounded-t-3xl sm:rounded-3xl border border-dark-cardBorder p-5 space-y-4 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-dark-cardBorder pb-3">
+        <h3 id="modal-title" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-capsules text-brand-500"></i> Add Supplement
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="supplement-form" onsubmit="saveSupplement(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="supp-id">
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-medium">Supplement Name</label>
+          <input type="text" id="supp-name" required placeholder="e.g. Vitamin D3 & K2" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-medium">Dosage / Details</label>
+          <input type="text" id="supp-dosage" required placeholder="e.g. 4000iu & MK7 100ug" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Time Window</label>
+            <select id="supp-timing" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+              <option value="MORNING">MORNING</option>
+              <option value="AFTERNOON">AFTERNOON</option>
+              <option value="EVENING">EVENING</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Schedule</label>
+            <select id="supp-schedule" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+              <option value="Every day">Every day</option>
+              <option value="Every other day">Every other day</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Reminder Time</label>
+            <input type="time" id="supp-time" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Icon Style</label>
+            <select id="supp-icon" class="w-full bg-dark-surface border border-dark-cardBorder rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-brand-500">
+              <option value="💊">💊 Pill</option>
+              <option value="🧪">🧪 Liquid / Drops</option>
+              <option value="🛡️">🛡️ Immune Shield</option>
+              <option value="⚡">⚡ Energy Powder</option>
+              <option value="🌿">🌿 Herbal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button type="button" onclick="closeModal()" class="flex-1 bg-dark-surface hover:bg-dark-cardBorder text-slate-300 font-bold py-2.5 rounded-xl transition-colors">Cancel</button>
+          <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-slate-950 font-black py-2.5 rounded-xl shadow-lg shadow-brand-500/20 transition-colors">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Toast Notification Bar -->
+  <div id="toast" class="fixed bottom-16 left-1/2 -translate-x-1/2 bg-dark-card border border-dark-cardBorder text-slate-100 px-4 py-2.5 rounded-full shadow-2xl text-xs font-semibold opacity-0 transition-opacity pointer-events-none z-50 flex items-center gap-2">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-brand-500"></i>
+    <span id="toast-msg">Notification</span>
+  </div>
+
+
+  <!-- JavaScript Application State -->
+  <script>
+    // Initial Default Supplement Stack
+    const DEFAULT_SUPPLEMENTS = [
+      {
+        id: '1',
+        name: 'Vitamin D & K2 MK-7',
+        dosage: '4000iu & M2 100µg',
+        timing: 'MORNING',
+        schedule: 'Every other day',
+        time: '11:00',
+        icon: '💊',
+        createdDate: '2026-10-01',
+        dosesCount: 1
+      },
+      {
+        id: '2',
+        name: 'Fish Oil',
+        dosage: '660mg EPA & 440mg DHA',
+        timing: 'MORNING',
+        schedule: 'Every day',
+        time: '09:00',
+        icon: '💊',
+        createdDate: '2026-10-01',
+        dosesCount: 1
+      },
+      {
+        id: '3',
+        name: 'Vitamin C + Zinc',
+        dosage: '1000mg Vitamin C +15mg Zinc',
+        timing: 'MORNING',
+        schedule: 'Every day',
+        time: '10:00',
+        icon: '🛡️',
+        createdDate: '2026-10-01',
+        dosesCount: 1
+      },
+      {
+        id: '4',
+        name: 'Magnesium Glycinate',
+        dosage: '284mg (3x pills)',
+        timing: 'EVENING',
+        schedule: 'Every day',
+        time: '21:30',
+        icon: '💎',
+        createdDate: '2026-10-01',
+        dosesCount: 1
+      }
+    ];
 
     const BADGES = [
-      { id: 'streak-1', icon: '⚡', title: 'First Intake', target: 1, desc: 'Complete 1 full day of scheduled supplements.' },
-      { id: 'streak-7', icon: '🛡️', title: '7-Day Vanguard', target: 7, desc: 'Maintain 7 consecutive days of 100% adherence.' },
-      { id: 'streak-14', icon: '🌿', title: 'Fortified System', target: 14, desc: 'Reach 14 unbroken days of daily intake.' },
-      { id: 'streak-30', icon: '💎', title: 'Monthly Titan', target: 30, desc: 'Complete 30 days of continuous adherence.' },
-      { id: 'streak-90', icon: '👑', title: 'Master Alchemist', target: 90, desc: 'Reach 90 days of complete consistency.' }
+      { id: '1', title: 'First Dose', desc: 'Log your first supplement dose', icon: '⚡', target: 1 },
+      { id: '2', title: '3-Day Streak', desc: 'Complete 3 consecutive days', icon: '🔥', target: 3 },
+      { id: '3', title: '7-Day Vanguard', desc: 'Maintain a 1 week continuous streak', icon: '🛡️', target: 7 },
+      { id: '4', title: '30-Day Master', desc: '1 Month of perfect adherence', icon: '👑', target: 30 }
     ];
 
-    function init() {
-      document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-      renderChecklist();
+    let supplements = [];
+    let logs = {}; // Format: { "YYYY-MM-DD": { "suppId": { taken: true, extraDoses: 0 } } }
+    let journals = {}; // Format: { "YYYY-MM-DD": "text entry" }
+    let activeTab = 'today';
+    let calendarMonthDate = new Date();
+
+    window.onload = function () {
+      loadData();
+      renderTodayView();
+      renderSupplementsList();
+      renderCalendar();
+      renderStats();
+      initNotificationTimer();
+    };
+
+    function loadData() {
+      const storedSupps = localStorage.getItem('vitatrack_supps_v3');
+      const storedLogs = localStorage.getItem('vitatrack_logs_v3');
+      const storedJournals = localStorage.getItem('vitatrack_journals_v3');
+
+      supplements = storedSupps ? JSON.parse(storedSupps) : DEFAULT_SUPPLEMENTS;
+      logs = storedLogs ? JSON.parse(storedLogs) : {};
+      journals = storedJournals ? JSON.parse(storedJournals) : {};
+
+      const todayStr = getTodayISOString();
+      if (!logs[todayStr]) {
+        logs[todayStr] = {};
+      }
+
+      saveData();
     }
 
-    function switchTab(viewId, element) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      element.classList.add('active');
-
-      if (viewId === 'stats-view') renderCalendar();
-      if (viewId === 'streaks-view') renderStreaksAndBadges();
+    function saveData() {
+      localStorage.setItem('vitatrack_supps_v3', JSON.stringify(supplements));
+      localStorage.setItem('vitatrack_logs_v3', JSON.stringify(logs));
+      localStorage.setItem('vitatrack_journals_v3', JSON.stringify(journals));
     }
 
-    function renderChecklist() {
-      const container = document.getElementById('supplement-list');
+    function getISOString(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTodayISOString() {
+      return getISOString(new Date());
+    }
+
+    // Switch Navigation Tabs
+    function switchTab(tabId) {
+      activeTab = tabId;
+
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-brand-500');
+        btn.classList.add('text-slate-500');
+      });
+
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.remove('text-slate-500');
+        activeNav.classList.add('text-brand-500');
+      }
+
+      if (tabId === 'today') renderTodayView();
+      if (tabId === 'supplements') renderSupplementsList();
+      if (tabId === 'log') renderCalendar();
+      if (tabId === 'stats') renderStats();
+    }
+
+    // TAB 1: Today Checklist & Progress Ring
+    function renderTodayView() {
+      const todayStr = getTodayISOString();
+      const todayLogs = logs[todayStr] || {};
+
+      const container = document.getElementById('today-groups-container');
       container.innerHTML = '';
 
-      if (!logs[todayKey]) logs[todayKey] = {};
+      // Group supplements by Morning / Evening / Afternoon
+      const groups = { 'MORNING': [], 'AFTERNOON': [], 'EVENING': [] };
 
       supplements.forEach(supp => {
-        const isDone = logs[todayKey][supp.id] || false;
-        const card = document.createElement('div');
-        card.className = `card ${isDone ? 'completed' : ''}`;
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-info">
-              <h3>${supp.name}</h3>
-              ${supp.desc ? `<div class="desc">${supp.desc}</div>` : ''}
-              <div class="meta">
-                <span>${supp.freq === 'daily' ? 'Daily' : 'Alternate Days'}</span>
-                <span>• Scheduled ${supp.time}</span>
+        const timing = supp.timing || 'MORNING';
+        if (groups[timing]) {
+          groups[timing].push(supp);
+        } else {
+          groups['MORNING'].push(supp);
+        }
+      });
+
+      let totalCount = supplements.length;
+      let takenCount = 0;
+
+      Object.keys(groups).forEach(groupKey => {
+        const items = groups[groupKey];
+        if (items.length === 0) return;
+
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'flex justify-between items-center mb-2.5';
+        groupHeader.innerHTML = `
+          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">${groupKey}</span>
+          <button onclick="markAllGroupTaken('${groupKey}')" class="text-[11px] font-bold text-brand-500 hover:underline tracking-wider">MARK ALL</button>
+        `;
+
+        const groupWrapper = document.createElement('div');
+        groupWrapper.className = 'space-y-3 mb-6';
+        groupWrapper.appendChild(groupHeader);
+
+        items.forEach(supp => {
+          const suppLog = todayLogs[supp.id] || { taken: false, extraDoses: 0 };
+          if (suppLog.taken) takenCount++;
+
+          const card = document.createElement('div');
+          card.className = 'bg-dark-card border border-dark-cardBorder rounded-2xl p-4 shadow-sm space-y-3';
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <span class="text-2xl">${supp.icon || '💊'}</span>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-sm font-bold text-white truncate">${supp.name}</h3>
+                  <p class="text-xs text-slate-400 truncate">${supp.dosage}</p>
+                  <div class="flex items-center gap-2 mt-1 text-[10px] text-slate-500 font-medium">
+                    <span><i class="fa-regular fa-clock"></i> ${supp.time || '10:00'}</span>
+                    <span>• ${supp.schedule || 'Every day'}</span>
+                  </div>
+                </div>
               </div>
+
+              <!-- Check Button -->
+              <button onclick="toggleDose('${supp.id}')" class="w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                suppLog.taken 
+                  ? 'bg-brand-500 text-slate-950 font-bold shadow-lg shadow-brand-500/30' 
+                  : 'bg-dark-surface border border-dark-cardBorder text-transparent hover:border-brand-500'
+              }">
+                <i class="fa-solid fa-check text-sm"></i>
+              </button>
             </div>
-            <div class="checkbox" onclick="toggleSupp(${supp.id})"></div>
+
+            <!-- Secondary Dose Action Row -->
+            <div class="pt-2 border-t border-dark-cardBorder/50 flex justify-between items-center text-xs">
+              <span class="text-slate-400 text-[11px]">Doses today: <strong class="text-white">${(suppLog.taken ? 1 : 0) + (suppLog.extraDoses || 0)}</strong></span>
+              <button onclick="logExtraDose('${supp.id}')" class="text-brand-500 hover:text-brand-600 font-bold flex items-center gap-1 text-[11px]">
+                <i class="fa-solid fa-circle-plus text-xs"></i> Log another dose
+              </button>
+            </div>
+          `;
+          groupWrapper.appendChild(card);
+        });
+
+        container.appendChild(groupWrapper);
+      });
+
+      // Update Ring Progress
+      document.getElementById('progress-taken-text').innerText = `${takenCount} of ${totalCount}`;
+
+      const ring = document.getElementById('progress-ring');
+      const circumference = 251.2;
+      const pct = totalCount > 0 ? (takenCount / totalCount) : 0;
+      const offset = circumference - (pct * circumference);
+      ring.style.strokeDashoffset = offset;
+
+      updateStreakCountUI();
+    }
+
+    function toggleDose(suppId) {
+      const todayStr = getTodayISOString();
+      if (!logs[todayStr]) logs[todayStr] = {};
+
+      const current = logs[todayStr][suppId] || { taken: false, extraDoses: 0 };
+      current.taken = !current.taken;
+      logs[todayStr][suppId] = current;
+
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      saveData();
+      renderTodayView();
+      showToast(current.taken ? 'Marked as taken' : 'Dose removed');
+    }
+
+    function logExtraDose(suppId) {
+      const todayStr = getTodayISOString();
+      if (!logs[todayStr]) logs[todayStr] = {};
+
+      const current = logs[todayStr][suppId] || { taken: true, extraDoses: 0 };
+      current.extraDoses = (current.extraDoses || 0) + 1;
+      current.taken = true;
+      logs[todayStr][suppId] = current;
+
+      saveData();
+      renderTodayView();
+      showToast('Logged extra dose!');
+    }
+
+    function markAllGroupTaken(groupKey) {
+      const todayStr = getTodayISOString();
+      if (!logs[todayStr]) logs[todayStr] = {};
+
+      supplements.forEach(supp => {
+        if ((supp.timing || 'MORNING') === groupKey) {
+          const current = logs[todayStr][supp.id] || { taken: false, extraDoses: 0 };
+          current.taken = true;
+          logs[todayStr][supp.id] = current;
+        }
+      });
+
+      saveData();
+      renderTodayView();
+      showToast(`Marked all ${groupKey} supplements`);
+    }
+
+    // TAB 2: Supplements Manager
+    function renderSupplementsList() {
+      const container = document.getElementById('supplements-master-list');
+      container.innerHTML = '';
+
+      document.getElementById('supplements-count-text').innerText = `${supplements.length} active supplements`;
+
+      supplements.forEach(supp => {
+        const card = document.createElement('div');
+        card.className = 'bg-dark-card border border-dark-cardBorder rounded-2xl p-4 flex items-center justify-between gap-3 hover:border-slate-700 cursor-pointer transition-all';
+        card.onclick = () => openModal(supp.id);
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <span class="w-2.5 h-2.5 rounded-full ${supp.timing === 'EVENING' ? 'bg-accent-blue' : 'bg-accent-amber'} inline-block"></span>
+            <span class="text-xl">${supp.icon || '💊'}</span>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm font-bold text-white truncate">${supp.name}</h3>
+              <p class="text-[11px] text-slate-400 capitalize">${supp.timing || 'MORNING'}</p>
+              <p class="text-xs text-slate-500 truncate">${supp.dosage}</p>
+            </div>
           </div>
-          <div class="card-actions">
-            <button class="action-btn" onclick="editSupp(${supp.id})">Edit</button>
-            <button class="action-btn delete" onclick="deleteSupp(${supp.id})">Delete</button>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
           </div>
         `;
         container.appendChild(card);
       });
-
-      saveStorage();
     }
 
-    function toggleSupp(id) {
-      if (!logs[todayKey]) logs[todayKey] = {};
-      logs[todayKey][id] = !logs[todayKey][id];
-      saveStorage();
-      renderChecklist();
-    }
-
-    function editSupp(id) {
-      const supp = supplements.find(s => s.id === id);
-      if (!supp) return;
-
-      document.getElementById('edit-id').value = supp.id;
-      document.getElementById('supp-name').value = supp.name;
-      document.getElementById('supp-desc').value = supp.desc || '';
-      document.getElementById('supp-freq').value = supp.freq;
-      document.getElementById('supp-time').value = supp.time;
-
-      document.getElementById('form-title').innerText = 'Edit Supplement';
-      document.getElementById('form-submit-btn').innerText = 'Update Supplement';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteSupp(id) {
-      if (confirm('Delete this supplement from your schedule?')) {
-        supplements = supplements.filter(s => s.id !== id);
-        saveStorage();
-        renderChecklist();
+    function addSampleStack() {
+      if (confirm("Load default supplement stack?")) {
+        supplements = DEFAULT_SUPPLEMENTS;
+        saveData();
+        renderSupplementsList();
+        renderTodayView();
+        showToast("Loaded default stack!");
       }
     }
 
-    document.getElementById('supp-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const editId = document.getElementById('edit-id').value;
-      const name = document.getElementById('supp-name').value;
-      const desc = document.getElementById('supp-desc').value;
-      const freq = document.getElementById('supp-freq').value;
-      const time = document.getElementById('supp-time').value;
+    // TAB 3: Log (Calendar History & Journal)
+    function switchLogSubTab(sub) {
+      const histBtn = document.getElementById('log-sub-history');
+      const jourBtn = document.getElementById('log-sub-journal');
+      const histCont = document.getElementById('log-content-history');
+      const jourCont = document.getElementById('log-content-journal');
 
-      if (editId) {
-        const supp = supplements.find(s => s.id == editId);
-        if (supp) {
-          supp.name = name;
-          supp.desc = desc;
-          supp.freq = freq;
-          supp.time = time;
-        }
+      if (sub === 'history') {
+        histBtn.className = 'flex-1 py-2 rounded-xl bg-dark-card text-white shadow-sm transition-all';
+        jourBtn.className = 'flex-1 py-2 rounded-xl text-slate-400 hover:text-white transition-all';
+        histCont.classList.remove('hidden');
+        jourCont.classList.add('hidden');
       } else {
-        supplements.push({ id: Date.now(), name, desc, freq, time });
+        jourBtn.className = 'flex-1 py-2 rounded-xl bg-dark-card text-white shadow-sm transition-all';
+        histBtn.className = 'flex-1 py-2 rounded-xl text-slate-400 hover:text-white transition-all';
+        jourCont.classList.remove('hidden');
+        histCont.classList.add('hidden');
+        renderJournalEntries();
+      }
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-days-grid');
+      const title = document.getElementById('calendar-month-title');
+      grid.innerHTML = '';
+
+      const year = calendarMonthDate.getFullYear();
+      const month = calendarMonthDate.getMonth();
+
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      title.innerText = `${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Leading empty cells
+      for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'h-9 rounded-xl';
+        grid.appendChild(emptyCell);
       }
 
-      saveStorage();
-      resetForm();
-      renderChecklist();
-    });
+      const todayStr = getTodayISOString();
 
-    function resetForm() {
-      document.getElementById('edit-id').value = '';
-      document.getElementById('supp-form').reset();
-      document.getElementById('form-title').innerText = 'Add New Supplement';
-      document.getElementById('form-submit-btn').innerText = 'Add Supplement';
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        const dateStr = getISOString(dateObj);
+
+        const cell = document.createElement('div');
+        cell.className = 'h-9 rounded-xl flex items-center justify-center relative transition-all border border-transparent';
+
+        const dayLog = logs[dateStr];
+        let takenAll = false;
+        let takenSome = false;
+
+        if (dayLog && supplements.length > 0) {
+          const takenNum = supplements.filter(s => dayLog[s.id] && dayLog[s.id].taken).length;
+          if (takenNum === supplements.length) takenAll = true;
+          else if (takenNum > 0) takenSome = true;
+        }
+
+        if (takenAll) {
+          cell.className += ' bg-brand-500 text-slate-950 font-black shadow-md shadow-brand-500/20';
+        } else if (takenSome) {
+          cell.className += ' bg-accent-amber text-slate-950 font-black';
+        } else {
+          cell.className += ' bg-dark-surface text-slate-400 border-dark-cardBorder/50';
+        }
+
+        if (dateStr === todayStr) {
+          cell.className += ' ring-2 ring-white ring-offset-1 ring-offset-dark-bg';
+        }
+
+        cell.innerText = day;
+        grid.appendChild(cell);
+      }
     }
 
-    function saveStorage() {
-      localStorage.setItem('vt_supplements', JSON.stringify(supplements));
-      localStorage.setItem('vt_logs', JSON.stringify(logs));
+    function changeCalendarMonth(offset) {
+      calendarMonthDate.setMonth(calendarMonthDate.getMonth() + offset);
+      renderCalendar();
     }
 
-    function calculateStreaks() {
+    function saveJournalEntry() {
+      const txt = document.getElementById('journal-textarea').value.trim();
+      if (!txt) return;
+
+      const todayStr = getTodayISOString();
+      journals[todayStr] = txt;
+      saveData();
+      document.getElementById('journal-textarea').value = '';
+      renderJournalEntries();
+      showToast('Journal note saved!');
+    }
+
+    function renderJournalEntries() {
+      const container = document.getElementById('journal-entries-list');
+      container.innerHTML = '';
+
+      const keys = Object.keys(journals).sort().reverse();
+      if (keys.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No journal entries logged yet.</p>`;
+        return;
+      }
+
+      keys.forEach(k => {
+        const entry = document.createElement('div');
+        entry.className = 'bg-dark-card border border-dark-cardBorder p-3 rounded-2xl space-y-1';
+        entry.innerHTML = `
+          <span class="text-[10px] font-bold text-brand-500 uppercase">${k}</span>
+          <p class="text-xs text-slate-200">${journals[k]}</p>
+        `;
+        container.appendChild(entry);
+      });
+    }
+
+    // TAB 4: Stats & Badges
+    function calculateStreak() {
       let currentStreak = 0;
       let date = new Date();
 
       while (true) {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = getISOString(date);
         const dayLog = logs[dateStr];
 
-        if (dayLog && supplements.length > 0 && supplements.every(s => dayLog[s.id])) {
+        if (dayLog && supplements.length > 0 && supplements.every(s => dayLog[s.id] && dayLog[s.id].taken)) {
           currentStreak++;
           date.setDate(date.getDate() - 1);
         } else {
-          if (dateStr === todayKey) {
+          if (dateStr === getTodayISOString()) {
             date.setDate(date.getDate() - 1);
             continue;
           }
           break;
         }
       }
-
-      let bestStreak = Math.max(currentStreak, parseInt(localStorage.getItem('vt_best_streak') || '0'));
-      localStorage.setItem('vt_best_streak', bestStreak);
-
-      return { currentStreak, bestStreak };
+      return currentStreak;
     }
 
-    function renderCalendar() {
-      const grid = document.getElementById('calendar-grid');
-      grid.innerHTML = '';
-      const now = new Date();
-      document.getElementById('month-name').innerText = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      for (let day = 1; day <= daysInMonth; day++) {
-        const cellDate = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0];
-        const dayLog = logs[cellDate];
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        cell.innerText = day;
-
-        if (cellDate === todayKey) cell.classList.add('today');
-
-        if (dayLog) {
-          const completedCount = supplements.filter(s => dayLog[s.id]).length;
-          if (completedCount === supplements.length && supplements.length > 0) {
-            cell.classList.add('green');
-          } else if (completedCount > 0) {
-            cell.classList.add('amber');
-          }
-        }
-        grid.appendChild(cell);
-      }
+    function updateStreakCountUI() {
+      const streak = calculateStreak();
+      document.getElementById('header-streak-count').innerText = streak.toString();
+      document.getElementById('stat-current-streak').innerText = `${streak} Days`;
+      document.getElementById('streak-banner-count').innerText = `${streak} Days`;
     }
 
-    function renderStreaksAndBadges() {
-      const { currentStreak, bestStreak } = calculateStreaks();
-      document.getElementById('current-streak').innerText = `${currentStreak} DAYS`;
-      document.getElementById('best-streak').innerText = `Personal Best: ${bestStreak} Days`;
+    function renderStats() {
+      updateStreakCountUI();
 
-      const badgesGrid = document.getElementById('badges-grid');
-      badgesGrid.innerHTML = '';
+      let totalDoses = 0;
+      Object.values(logs).forEach(dayLog => {
+        Object.values(dayLog).forEach(supp => {
+          if (supp.taken) totalDoses++;
+        });
+      });
+
+      document.getElementById('stat-total-doses').innerText = totalDoses.toString();
+
+      // Badges
+      const streak = calculateStreak();
+      const container = document.getElementById('badges-grid-container');
+      container.innerHTML = '';
 
       BADGES.forEach(badge => {
-        const isUnlocked = currentStreak >= badge.target;
-        const progressPct = Math.min(100, Math.round((currentStreak / badge.target) * 100));
-
+        const isUnlocked = streak >= badge.target;
         const card = document.createElement('div');
-        card.className = `badge-card ${isUnlocked ? 'unlocked' : ''}`;
+        card.className = `p-3.5 rounded-2xl border text-center space-y-1.5 transition-all ${
+          isUnlocked 
+            ? 'bg-dark-card border-brand-500/50 shadow-lg shadow-brand-500/10' 
+            : 'bg-dark-card/50 border-dark-cardBorder opacity-50'
+        }`;
+
         card.innerHTML = `
-          <div class="badge-icon">${badge.icon}</div>
-          <div class="badge-title">${badge.title}</div>
-          <div class="badge-desc">${badge.desc}</div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width: ${progressPct}%;"></div>
-          </div>
+          <span class="text-2xl block">${badge.icon}</span>
+          <h4 class="text-xs font-bold text-white">${badge.title}</h4>
+          <p class="text-[10px] text-slate-400 leading-tight">${badge.desc}</p>
+          <span class="inline-block mt-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full ${
+            isUnlocked ? 'bg-brand-500/20 text-brand-500' : 'bg-dark-surface text-slate-500'
+          }">${isUnlocked ? 'Unlocked' : `Locked (${streak}/${badge.target})`}</span>
         `;
-        badgesGrid.appendChild(card);
+        container.appendChild(card);
       });
     }
 
-    init();
+    // Modal Add / Edit Logic
+    function openModal(id = null) {
+      const modal = document.getElementById('modal-backdrop');
+      const title = document.getElementById('modal-title');
+
+      if (id) {
+        const supp = supplements.find(s => s.id === id);
+        if (supp) {
+          document.getElementById('supp-id').value = supp.id;
+          document.getElementById('supp-name').value = supp.name;
+          document.getElementById('supp-dosage').value = supp.dosage;
+          document.getElementById('supp-timing').value = supp.timing || 'MORNING';
+          document.getElementById('supp-schedule').value = supp.schedule || 'Every day';
+          document.getElementById('supp-time').value = supp.time || '09:00';
+          document.getElementById('supp-icon').value = supp.icon || '💊';
+          title.innerHTML = `<i class="fa-solid fa-pen-to-square text-brand-500"></i> Edit Supplement`;
+        }
+      } else {
+        document.getElementById('supplement-form').reset();
+        document.getElementById('supp-id').value = '';
+        document.getElementById('supp-time').value = '09:00';
+        title.innerHTML = `<i class="fa-solid fa-capsules text-brand-500"></i> Add Supplement`;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+    }
+
+    function saveSupplement(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('supp-id').value;
+      const name = document.getElementById('supp-name').value.trim();
+      const dosage = document.getElementById('supp-dosage').value.trim();
+      const timing = document.getElementById('supp-timing').value;
+      const schedule = document.getElementById('supp-schedule').value;
+      const time = document.getElementById('supp-time').value;
+      const icon = document.getElementById('supp-icon').value;
+
+      if (id) {
+        const supp = supplements.find(s => s.id === id);
+        if (supp) {
+          supp.name = name;
+          supp.dosage = dosage;
+          supp.timing = timing;
+          supp.schedule = schedule;
+          supp.time = time;
+          supp.icon = icon;
+          showToast('Updated supplement');
+        }
+      } else {
+        supplements.push({
+          id: Date.now().toString(),
+          name,
+          dosage,
+          timing,
+          schedule,
+          time,
+          icon,
+          createdDate: getTodayISOString()
+        });
+        showToast('Added supplement');
+      }
+
+      saveData();
+      renderTodayView();
+      renderSupplementsList();
+      closeModal();
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ supplements, logs, journals }));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `vitatrack_backup_${getTodayISOString()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Exported backup file');
+    }
+
+    function clearAllData() {
+      if (confirm('Clear all stored supplements and history?')) {
+        localStorage.clear();
+        supplements = DEFAULT_SUPPLEMENTS;
+        logs = {};
+        journals = {};
+        saveData();
+        renderTodayView();
+        renderSupplementsList();
+        renderCalendar();
+        renderStats();
+        showToast('App reset');
+      }
+    }
+
+    function requestNotificationPermission() {
+      if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') showToast('Notifications enabled!');
+          else showToast('Notification permission denied');
+        });
+      }
+    }
+
+    function initNotificationTimer() {
+      setInterval(() => {
+        const now = new Date();
+        const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const todayLogs = logs[getTodayISOString()] || {};
+
+        supplements.forEach(supp => {
+          const suppLog = todayLogs[supp.id] || { taken: false };
+          if (!suppLog.taken && supp.time === currentTimeStr) {
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification(`Time for ${supp.name}`, { body: `${supp.dosage} (${supp.timing})` });
+            }
+          }
+        });
+      }, 60000);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+
+      toastMsg.innerText = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+        toast.classList.remove('opacity-100');
+      }, 2000);
+    }
   </script>
 </body>
 </html>
